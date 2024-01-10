@@ -27,9 +27,8 @@ def main():
     data = crawl(num_cves, from_index)
 
     print('Crawling finished')
-    for cve in data:
-        # cve.to_json()
-        pass
+    raw_data = export_to_json(data)
+    print(raw_data)
     print('Preprocessing...')  # preprocess(data)
 
 
@@ -98,6 +97,12 @@ def extract_info(crawled_data):
                 if hasattr(v31_metrics.cvss_data, 'vector_string'):
                     cve.v31_vector_string = v31_metrics.cvss_data.vector_string
     return cve
+
+
+def export_to_json(data):
+    for i in range(len(data)):
+        data[i] = data[i].to_json()
+    return data
 
 
 def crawl(num_cves, from_index):
