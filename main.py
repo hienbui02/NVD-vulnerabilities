@@ -1,4 +1,6 @@
 import os
+import json
+import csv
 
 from dotenv import load_dotenv
 from nvd_api import NvdApiClient
@@ -127,10 +129,37 @@ def crawl(num_cves, from_index):
 
     return data
 
+def crawl_all(file_path):
+    with open(file_path, 'w') as file:
+        start_index = 0
+        fieldnames = [
+        "id", "source_identifier", "published_date", "last_modified_date",
+        "status", "description", "references", "configurations", "weaknesses",
+        "v20_base_severity", "v20_base_score", "v20_vector_string",
+        "v20_exploitability_score", "v20_impact_score", "v30_base_severity",
+        "v30_base_score", "v30_vector_string", "v30_exploitability_score",
+        "v30_impact_score", "v31_base_severity", "v31_base_score",
+        "v31_vector_string", "v31_exploitability_score", "v31_impact_score"
+        ]
+        writer = csv.DictWriter(file, fieldnames=fieldnames)
+        writer.writeheader()
+        while True:
+            max_results_per_page = 2000
+            response = client.get_cves(results_per_page=max_results_per_page, start_index=start_index)
+            for cve in response.vulnerabilities:
+                data = extract_info(cve.cve)
+                writer.writerow(data.to_json())
+            start_index += len(response.vulnerabilities)
+            print(start_index)
+            if len(response.vulnerabilities) < max_results_per_page:
+                break
+
+
 
 def preprocess(data):
     pass
 
 
 if __name__ == '__main__':
-    main()
+    #main()
+    crawl_all('data.csv')

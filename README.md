@@ -1,5 +1,6 @@
 # NVD-vulnerabilities
 - [Plan](https://docs.google.com/document/d/1-yHempHQgdhwTyNKZZ4Ld_x5NPwzRSLyRiWn0T8ZbEU/edit)
+- [Dataset](https://drive.google.com/drive/folders/185LSVVKdfu6BBse_8yQ3sUfiQYsEJqUv?usp=sharing)
 - Install requirements: `pip install -r requirements.txt`
 - Get an API key from [NVD](https://nvd.nist.gov/developers/request-an-api-key)
 - Create a .env file in the root directory and add the following line:
