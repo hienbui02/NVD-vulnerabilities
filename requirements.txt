@@ -1,2 +1,6 @@
 python-dotenv
 nvd-api
+plotly
+wordcloud
+collections
+urllib
