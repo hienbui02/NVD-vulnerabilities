@@ -1,6 +1,6 @@
-import os
-import json
 import csv
+import json
+import os
 
 from dotenv import load_dotenv
 from nvd_api import NvdApiClient
@@ -26,12 +26,15 @@ def main():
         from_index = 0
 
     print('Crawling...')
-    data = crawl(num_cves, from_index)
+    raw_data = crawl(num_cves, from_index)
 
     print('Crawling finished')
-    raw_data = export_to_json(data)
-    print(raw_data)
-    print('Preprocessing...')  # preprocess(data)
+    data = export_to_json(raw_data)
+    print('Exporting to json...')
+    save_to_json('data.json', data)
+    print('Exporting to csv...')
+    save_to_csv('data.csv', data)
+
 
 
 def extract_info(crawled_data):
@@ -129,31 +132,24 @@ def crawl(num_cves, from_index):
 
     return data
 
-def crawl_all(file_path):
-    with open(file_path, 'w') as file:
-        start_index = 0
-        fieldnames = [
-        "id", "source_identifier", "published_date", "last_modified_date",
-        "status", "description", "references", "configurations", "weaknesses",
-        "v20_base_severity", "v20_base_score", "v20_vector_string",
-        "v20_exploitability_score", "v20_impact_score", "v30_base_severity",
-        "v30_base_score", "v30_vector_string", "v30_exploitability_score",
-        "v30_impact_score", "v31_base_severity", "v31_base_score",
-        "v31_vector_string", "v31_exploitability_score", "v31_impact_score"
-        ]
+
+def save_to_json(file_path, data):
+    with open(file_path, 'w', encoding='utf-8') as f:
+        json.dump(data, f, ensure_ascii=False, indent=4)
+
+
+def save_to_csv(file_path, data):
+    with open(file_path, 'w', newline='') as file:
+        fieldnames = ["id", "source_identifier", "published_date", "last_modified_date", "status", "description",
+                      "references", "configurations", "weaknesses", "v20_base_severity", "v20_base_score",
+                      "v20_vector_string", "v20_exploitability_score", "v20_impact_score", "v30_base_severity",
+                      "v30_base_score", "v30_vector_string", "v30_exploitability_score", "v30_impact_score",
+                      "v31_base_severity", "v31_base_score", "v31_vector_string", "v31_exploitability_score",
+                      "v31_impact_score"]
         writer = csv.DictWriter(file, fieldnames=fieldnames)
         writer.writeheader()
-        while True:
-            max_results_per_page = 2000
-            response = client.get_cves(results_per_page=max_results_per_page, start_index=start_index)
-            for cve in response.vulnerabilities:
-                data = extract_info(cve.cve)
-                writer.writerow(data.to_json())
-            start_index += len(response.vulnerabilities)
-            print(start_index)
-            if len(response.vulnerabilities) < max_results_per_page:
-                break
-
+        for i in range(len(data)):
+            writer.writerow(data[i])
 
 
 def preprocess(data):
@@ -161,5 +157,4 @@ def preprocess(data):
 
 
 if __name__ == '__main__':
-    #main()
-    crawl_all('data.csv')
+    main()
