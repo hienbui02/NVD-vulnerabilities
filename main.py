@@ -1,6 +1,7 @@
 import csv
 import json
 import os
+from datetime import datetime
 
 from dotenv import load_dotenv
 from nvd_api import NvdApiClient
@@ -29,12 +30,13 @@ def main():
     raw_data = crawl(num_cves, from_index)
 
     print('Crawling finished')
+    # get current date and time and append to file name
+    file_name = 'data_nvd_cves_' + datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
     data = export_to_json(raw_data)
     print('Exporting to json...')
-    save_to_json('data.json', data)
+    save_to_json(file_name + '.json', data)
     print('Exporting to csv...')
-    save_to_csv('data.csv', data)
-
+    save_to_csv(file_name + '.csv', data)
 
 
 def extract_info(crawled_data):
