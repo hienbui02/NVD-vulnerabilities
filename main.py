@@ -2,11 +2,11 @@ import csv
 import json
 import os
 from datetime import datetime
-
 from dotenv import load_dotenv
 from nvd_api import NvdApiClient
 
 from CVE import CVE
+from utility import is_git_commit_link, get_code_diff
 
 load_dotenv()
 API_KEY = os.environ.get('API_KEY')
@@ -42,6 +42,10 @@ def main():
 def extract_info(crawled_data):
     cve = CVE()
     cve.cve_id = crawled_data.id
+    for ref in crawled_data.references:
+        if is_git_commit_link(ref.url):
+            cve.references.append(ref.url)
+            cve.code_snippet.append(get_code_diff(ref.url))
     for description in crawled_data.descriptions:
         if description.lang == 'en':
             cve.description = description.value
@@ -50,8 +54,7 @@ def extract_info(crawled_data):
     cve.status = crawled_data.vuln_status
     cve.published_date = crawled_data.published.date().strftime("%Y-%m-%d")
     cve.last_modified_date = crawled_data.last_modified.date().strftime("%Y-%m-%d")
-    for ref in crawled_data.references:
-        cve.references.append(ref.url)
+
     if hasattr(crawled_data, 'weaknesses'):
         for weakness in crawled_data.weaknesses:
             for description in weakness.description:
@@ -134,6 +137,33 @@ def crawl(num_cves, from_index):
 
     return data
 
+def crawl_all_code(file_path):
+    with open(file_path, 'w') as file:
+        start_index = 0
+        fieldnames = [
+        "id", "source_identifier", "published_date", "last_modified_date",
+        "status", "description", "references", "configurations", "weaknesses",
+        "v20_base_severity", "v20_base_score", "v20_vector_string",
+        "v20_exploitability_score", "v20_impact_score", "v30_base_severity",
+        "v30_base_score", "v30_vector_string", "v30_exploitability_score",
+        "v30_impact_score", "v31_base_severity", "v31_base_score",
+        "v31_vector_string", "v31_exploitability_score", "v31_impact_score","code_snippet"
+        ]
+        writer = csv.DictWriter(file, fieldnames=fieldnames)
+        writer.writeheader()
+        while True:
+            max_results_per_page = 2000
+            response = client.get_cves(results_per_page=max_results_per_page, start_index=start_index)
+            for cve in response.vulnerabilities:
+                data = extract_info(cve.cve)
+                #print(data.references, data.code_snippet)
+                if len(data.references) ==0 or len(data.code_snippet) ==0:
+                    continue
+                writer.writerow(data.to_json())
+            start_index += len(response.vulnerabilities)
+            print(start_index)
+            if len(response.vulnerabilities) < max_results_per_page:
+                break
 
 def save_to_json(file_path, data):
     with open(file_path, 'w', encoding='utf-8') as f:
@@ -159,4 +189,4 @@ def preprocess(data):
 
 
 if __name__ == '__main__':
-    main()
+    crawl_all_code('data.csv')
