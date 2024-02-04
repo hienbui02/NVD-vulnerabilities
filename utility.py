@@ -7,8 +7,11 @@ def is_git_commit_link(link):
     if not re.match(r"^(https?://)?(www\.)?github\.com/(.*?)/(.*?)/commit/", link):
         return False
     # Check if the link contains a valid commit hash.
-    commit_hash = re.search(r"/commit/(.{40})", link).group(1)
-    if not re.match(r"^[0-9a-f]{40}$", commit_hash):
+    try:
+        commit_hash = re.search(r"/commit/(.{40})", link).group(1)
+        if not re.match(r"^[0-9a-f]{40}$", commit_hash):
+            return False
+    except:
         return False
     return True
 
