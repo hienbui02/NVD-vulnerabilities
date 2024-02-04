@@ -26,3 +26,6 @@
                 'pattern': r'^(ftp|http|ttp)s?:\/\/\S+$'
     ```
 - Run the script: `python3 main.py`
+- User has to provide which index they want to crawl from, and how many CVE that they want to crawl. This is because NVD fulfills crawling requests with an array of CVE, along with the start index and length of array.
+- If the crawling process is successful, the data will be saved into the same folder as 2 file csv and json, with timestamp. Users can use these files directly for researching.
+
