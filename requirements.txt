@@ -1,2 +1,2 @@
-python-dotenv=1.0.1
-nvd-api=0.9.1
+python-dotenv==1.0.1
+nvd-api==0.9.1
